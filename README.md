@@ -1,94 +1,144 @@
-<p align="center"><img src="banner.svg" width="600" /></p>
+<p align="center">
+  <img src="banner.svg" width="600" />
+</p>
 
-# release-pilot
+<h1 align="center">release-pilot</h1>
+<p align="center"><strong>Stop writing changelogs. Start shipping.</strong></p>
 
-Automated releases with AI-style changelogs from conventional commits.
+<p align="center">
+  <a href="#install"><img src="https://img.shields.io/badge/npx-release--pilot-blue?style=flat-square" alt="npx" /></a>
+  <img src="https://img.shields.io/badge/zero%20config-✓-green?style=flat-square" alt="zero config" />
+  <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square" alt="node" />
+  <img src="https://img.shields.io/github/license/NickCirv/release-pilot?style=flat-square" alt="license" />
+</p>
+
+<p align="center">
+  <em>One command. Changelog generated. Version bumped. Tag pushed. Done.</em>
+</p>
+
+---
+
+## The problem
+
+You just merged 47 commits. Now you need a changelog, a version bump, a git tag, and somehow you need to remember what "fix: stuff" meant 3 weeks ago. release-pilot reads your conventional commits and does it all in one shot.
 
 ## Install
 
 ```bash
-npm install -g release-pilot
+npx release-pilot check    # ready?
+npx release-pilot release  # ship it
 ```
 
-Or run without installing:
+No global install required. No config file. No CI pipeline. Just `npx` and go.
 
-```bash
-npx release-pilot
+---
+
+## See it in action
+
+```
+$ npx release-pilot check
+
+──────────────────────────────────────────────────
+  release-pilot
+──────────────────────────────────────────────────
+
+  ✔  Working tree is clean
+  ✔  On branch: main
+  ✔  Remote "origin" is configured
+
+  🚀  Ready to release.
 ```
 
-## Quick Demo
-
-```bash
-# Full release — bump, changelog, commit, tag, push
-npx release-pilot release
-
-# Preview what the next release would look like
-npx release-pilot release --dry-run
-
-# Force a major bump
-npx release-pilot release --force major
-
-# Preview changelog as JSON
-npx release-pilot changelog --json
-
-# Check repo is ready before releasing
-npx release-pilot check
 ```
+$ npx release-pilot release --dry-run
+
+──────────────────────────────────────────────────
+  release-pilot
+──────────────────────────────────────────────────
+
+  ┌─────────────────────────────────────┐
+  │        DRY RUN — no changes made    │
+  └─────────────────────────────────────┘
+
+Version Bump
+
+  1.2.3  →  1.3.0  (minor)
+
+  · 12 commits analysed
+  · 3 new feature(s)
+  · 2 bug fix(es)
+
+Changelog Preview
+
+## [1.3.0] - 2026-02-27
+
+### Added
+  · feat: streaming support for large file exports
+  · feat: configurable retry strategy on upload failures
+  · feat: dark mode preference stored in localStorage
+
+### Fixed
+  · fix: memory leak when closing WebSocket connections
+  · fix: incorrect date format in weekly summary headers
+
+  → Would write 48 lines to CHANGELOG.md
+  → Would commit: chore(release): v1.3.0
+
+Git Tag
+
+  ✔  Tag created: v1.3.0
+  ⚠  Remote not configured — tag not pushed
+
+──────────────────────────────────────────────────
+  🚀  Release 1.3.0
+──────────────────────────────────────────────────
+
+  ✔  Changelog generated   (48 lines)
+  ✔  package.json bumped   → 1.3.0
+  ✔  Git commit created
+  ✔  Tag created           v1.3.0
+```
+
+---
 
 ## Commands
 
-### `release` (default)
+| Command | What it does |
+|---------|-------------|
+| `release` | Full flow: bump → changelog → commit → tag → push |
+| `changelog` | Preview what the changelog would look like, no files touched |
+| `bump` | Just bump the version in `package.json`, nothing else |
+| `check` | Is the repo ready? Clean tree, right branch, remote configured |
 
-Runs the full release flow: determines bump type from commits, updates `package.json`, generates `CHANGELOG.md`, creates a release commit, tags it, and pushes to origin.
+### Key flags
 
-```
-Options:
-  --dry-run          Preview all actions without writing any files or pushing
-  --force <type>     Override bump type: major | minor | patch
-  --no-push          Skip pushing the tag to remote
-```
+- `--dry-run` — See everything without touching anything
+- `--force major|minor|patch` — Override the auto-detected bump
+- `--no-push` — Tag locally, don't push to remote
 
-### `changelog`
+---
 
-Preview the changelog that would be generated for the next release — no files modified.
+## How it works
 
-```
-Options:
-  --json             Output raw JSON (version, bumpType, commits, changelog text)
-```
+1. **Reads** your git log since the last tag (`git log v1.2.3..HEAD`)
+2. **Parses** conventional commits — `feat:` bumps minor, `fix:` bumps patch, `BREAKING CHANGE:` bumps major
+3. **Generates** a [Keep a Changelog](https://keepachangelog.com/) formatted `CHANGELOG.md`, prepended to any existing entries
+4. **Bumps** `package.json`, commits `chore(release): vX.Y.Z`, creates an annotated git tag, and pushes
 
-### `bump`
+Conventional commit types recognized: `feat`, `fix`, `chore`, `perf`, `refactor`, `docs`, `test`, `ci`, `build`, `style`, `revert`
 
-Bump the version in `package.json` only — no commit, no tag.
+Breaking changes detected via `!` suffix (e.g. `feat!: drop Node 16`) or `BREAKING CHANGE:` in the commit body.
 
-```
-Options:
-  --dry-run          Show the next version without writing package.json
-  --force <type>     Override bump type: major | minor | patch
-```
+---
 
-### `check`
+## Why not X?
 
-Check whether the repo is ready for a release: clean working tree, on `main` or `master`, remote configured.
+> **semantic-release** needs a CI environment and a mountain of config.
+> **standard-version** is unmaintained and archived.
+> **release-it** needs a config file and interactive prompts.
+>
+> release-pilot needs nothing. `npx` and go.
 
-## Features
+---
 
-- Conventional commits — parses `feat:`, `fix:`, `chore:`, `perf:`, `refactor:`, `docs:`, `test:`, `ci:`, `build:`, `style:`, `revert:`
-- Keep a Changelog format — output follows the [keepachangelog.com](https://keepachangelog.com/) spec
-- Semver — automatic `major` / `minor` / `patch` bump based on commit types and breaking changes
-- Breaking changes — detects `!` footer and `BREAKING CHANGE:` in commit bodies
-- Dry-run mode — full preview of every action, zero side effects
-- Annotated git tags — rich tag messages include the changelog excerpt
-- Zero config — works out of the box in any git repo with a `package.json`
-
-## Why
-
-Most release tools are either too heavy (full CI pipelines) or too thin (just a version bump). release-pilot does exactly one job: read your commits, figure out what changed, and ship a well-formatted release — from a single command, locally, with no configuration files required.
-
-## License
-
-MIT — see [LICENSE](LICENSE)
-
-## Author
-
-[NickCirv](https://github.com/NickCirv)
+## Built by [@NickCirv](https://github.com/NickCirv) · MIT License
