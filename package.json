@@ -1,0 +1,34 @@
+{
+  "name": "release-pilot",
+  "version": "1.0.0",
+  "description": "Automated releases with AI-style changelogs from conventional commits",
+  "type": "module",
+  "bin": {
+    "release-pilot": "./bin/pilot.js"
+  },
+  "main": "./src/index.js",
+  "scripts": {
+    "start": "node ./bin/pilot.js",
+    "lint": "node --check src/*.js bin/pilot.js"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT",
+  "author": "NickCirv <nick@cirvgreen.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NickCirv/release-pilot"
+  },
+  "keywords": [
+    "changelog",
+    "release",
+    "semver",
+    "conventional-commits",
+    "git"
+  ]
+}
