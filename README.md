@@ -1,56 +1,21 @@
-<p align="center">
-  <img src="banner.svg" width="600" />
-</p>
+![release-pilot — one command to bump, changelog, tag, and push your next release](assets/banner.png)
 
-<h1 align="center">release-pilot</h1>
-<p align="center"><strong>Stop writing changelogs. Start shipping.</strong></p>
+<div align="center">
 
-<p align="center">
-  <a href="#install"><img src="https://img.shields.io/badge/npx-release--pilot-blue?style=flat-square" alt="npx" /></a>
-  <img src="https://img.shields.io/badge/zero%20config-✓-green?style=flat-square" alt="zero config" />
-  <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square" alt="node" />
-  <img src="https://img.shields.io/github/license/NickCirv/release-pilot?style=flat-square" alt="license" />
-</p>
+**Turn conventional commits into a versioned release in one shot — no config, no CI required.**
 
-<p align="center">
-  <em>One command. Changelog generated. Version bumped. Tag pushed. Done.</em>
-</p>
+![license](https://img.shields.io/badge/license-MIT-blue?labelColor=0B0A09)
+![node](https://img.shields.io/badge/node-%3E%3D18-brightgreen?labelColor=0B0A09)
+![commit convention](https://img.shields.io/badge/conventional--commits-✓-8B92F6?labelColor=0B0A09)
+
+</div>
 
 ---
 
-## The problem
-
-You just merged 47 commits. Now you need a changelog, a version bump, a git tag, and somehow you need to remember what "fix: stuff" meant 3 weeks ago. release-pilot reads your conventional commits and does it all in one shot.
-
-## Install
-
-```bash
-npx release-pilot check    # ready?
-npx release-pilot release  # ship it
-```
-
-No global install required. No config file. No CI pipeline. Just `npx` and go.
-
----
-
-## See it in action
+You just merged 40 commits. Now you need a changelog, a version bump, a git tag, and somehow you need to remember what `fix: stuff` meant three weeks ago. `release-pilot` reads your conventional commits and does all of it in one command.
 
 ```
-$ npx release-pilot check
-
-──────────────────────────────────────────────────
-  release-pilot
-──────────────────────────────────────────────────
-
-  ✔  Working tree is clean
-  ✔  On branch: main
-  ✔  Remote "origin" is configured
-
-  🚀  Ready to release.
-```
-
-```
-$ npx release-pilot release --dry-run
+$ npx github:NickCirv/release-pilot release --dry-run
 
 ──────────────────────────────────────────────────
   release-pilot
@@ -87,7 +52,6 @@ Changelog Preview
 Git Tag
 
   ✔  Tag created: v1.3.0
-  ⚠  Remote not configured — tag not pushed
 
 ──────────────────────────────────────────────────
   🚀  Release 1.3.0
@@ -99,24 +63,56 @@ Git Tag
   ✔  Tag created           v1.3.0
 ```
 
----
+## Install
+
+No global install, no config file — runs straight from GitHub:
+
+```bash
+npx github:NickCirv/release-pilot
+```
+
+## Usage
+
+```bash
+# full release flow (bump → changelog → commit → tag → push)
+npx github:NickCirv/release-pilot release
+
+# preview without touching anything
+npx github:NickCirv/release-pilot release --dry-run
+
+# force a specific bump type
+npx github:NickCirv/release-pilot release --force minor
+
+# preview the changelog only (no writes)
+npx github:NickCirv/release-pilot changelog
+
+# preview changelog as JSON
+npx github:NickCirv/release-pilot changelog --json
+
+# bump package.json only, no tag or commit
+npx github:NickCirv/release-pilot bump
+
+# check if the repo is ready (clean tree, remote configured)
+npx github:NickCirv/release-pilot check
+```
 
 ## Commands
 
 | Command | What it does |
 |---------|-------------|
-| `release` | Full flow: bump → changelog → commit → tag → push |
-| `changelog` | Preview what the changelog would look like, no files touched |
-| `bump` | Just bump the version in `package.json`, nothing else |
-| `check` | Is the repo ready? Clean tree, right branch, remote configured |
+| `release` | Full flow: bump → changelog → commit → annotated tag → push |
+| `changelog` | Preview the changelog for the next release without touching files |
+| `bump` | Bump `package.json` only — no commit, no tag |
+| `check` | Verify clean working tree, correct branch, remote configured |
 
-### Key flags
+## Flags
 
-- `--dry-run` — See everything without touching anything
-- `--force major|minor|patch` — Override the auto-detected bump
-- `--no-push` — Tag locally, don't push to remote
-
----
+| Flag | Commands | Description |
+|------|----------|-------------|
+| `--dry-run` | `release`, `bump` | Preview all actions, no files modified |
+| `--force <type>` | `release`, `bump` | Override auto-detected bump: `major`, `minor`, or `patch` |
+| `--no-push` | `release` | Create tag locally, skip the remote push |
+| `--json` | `changelog` | Output raw JSON instead of formatted markdown |
 
 ## How it works
 
@@ -125,11 +121,9 @@ Git Tag
 3. **Generates** a [Keep a Changelog](https://keepachangelog.com/) formatted `CHANGELOG.md`, prepended to any existing entries
 4. **Bumps** `package.json`, commits `chore(release): vX.Y.Z`, creates an annotated git tag, and pushes
 
-Conventional commit types recognized: `feat`, `fix`, `chore`, `perf`, `refactor`, `docs`, `test`, `ci`, `build`, `style`, `revert`
+Conventional commit types recognised: `feat`, `fix`, `chore`, `perf`, `refactor`, `docs`, `test`, `ci`, `build`, `style`, `revert`
 
 Breaking changes detected via `!` suffix (e.g. `feat!: drop Node 16`) or `BREAKING CHANGE:` in the commit body.
-
----
 
 ## Why not X?
 
@@ -137,8 +131,16 @@ Breaking changes detected via `!` suffix (e.g. `feat!: drop Node 16`) or `BREAKI
 > **standard-version** is unmaintained and archived.
 > **release-it** needs a config file and interactive prompts.
 >
-> release-pilot needs nothing. `npx` and go.
+> release-pilot needs nothing. `npx github:NickCirv/release-pilot` and go.
+
+## What it is NOT
+
+- **Not a CI/CD platform.** It runs locally or in any shell — it doesn't manage pipelines, secrets, or deployment targets.
+- **Not a monorepo release tool.** It manages a single `package.json` version per run.
+- **Not a semantic-release replacement at scale.** For complex multi-package workflows with plugin ecosystems, semantic-release remains the right tool.
 
 ---
 
-## Built by [@NickCirv](https://github.com/NickCirv) · MIT License
+<div align="center">
+<sub>Node 18+ · MIT · by <a href="https://github.com/NickCirv">NickCirv</a></sub>
+</div>
