@@ -1,146 +1,77 @@
-![release-pilot — one command to bump, changelog, tag, and push your next release](assets/banner.png)
+![release-pilot — Nicholas Ashkar editorial artwork](assets/nicholas-ashkar/banner.png)
 
-<div align="center">
+# release-pilot
 
-**Turn conventional commits into a versioned release in one shot — no config, no CI required.**
+Draft and apply a conventional-commit release sequence for a local Git repository.
 
-![license](https://img.shields.io/badge/license-MIT-blue?labelColor=0B0A09)
-![node](https://img.shields.io/badge/node-%3E%3D18-brightgreen?labelColor=0B0A09)
-![commit convention](https://img.shields.io/badge/conventional--commits-✓-8B92F6?labelColor=0B0A09)
+Computes a version bump, prepares a changelog and can commit/tag the release. Start with preview commands to inspect the proposed changes.
 
-</div>
 
----
+<a id="install"></a>
 
-You just merged 40 commits. Now you need a changelog, a version bump, a git tag, and somehow you need to remember what `fix: stuff` meant three weeks ago. `release-pilot` reads your conventional commits and does all of it in one command.
+## Quickstart
 
-```
-$ npx github:NickCirv/release-pilot release --dry-run
-
-──────────────────────────────────────────────────
-  release-pilot
-──────────────────────────────────────────────────
-
-  ┌─────────────────────────────────────┐
-  │        DRY RUN — no changes made    │
-  └─────────────────────────────────────┘
-
-Version Bump
-
-  1.2.3  →  1.3.0  (minor)
-
-  · 12 commits analysed
-  · 3 new feature(s)
-  · 2 bug fix(es)
-
-Changelog Preview
-
-## [1.3.0] - 2026-02-27
-
-### Added
-  · feat: streaming support for large file exports
-  · feat: configurable retry strategy on upload failures
-  · feat: dark mode preference stored in localStorage
-
-### Fixed
-  · fix: memory leak when closing WebSocket connections
-  · fix: incorrect date format in weekly summary headers
-
-  → Would write 48 lines to CHANGELOG.md
-  → Would commit: chore(release): v1.3.0
-
-Git Tag
-
-  ✔  Tag created: v1.3.0
-
-──────────────────────────────────────────────────
-  🚀  Release 1.3.0
-──────────────────────────────────────────────────
-
-  ✔  Changelog generated   (48 lines)
-  ✔  package.json bumped   → 1.3.0
-  ✔  Git commit created
-  ✔  Tag created           v1.3.0
-```
-
-## Install
-
-No global install, no config file — runs straight from GitHub:
+Package runtime requirement: Node.js `>=20`. Git is needed to obtain this pinned source checkout.
 
 ```bash
-npx github:NickCirv/release-pilot
+git clone https://github.com/NickCirv/release-pilot.git
+cd release-pilot
+git checkout 4eb3de7fef7d82c4f68c875d81628fa75779bb0a
+npm install --ignore-scripts
+node bin/pilot.js changelog
 ```
+
+This source-derived example has not been executed in this review. The command previews the next changelog without writing release files. Run it from the repository being released.
+
+
+
+
+<a id="commands"></a>
+
+<a id="flags"></a>
+
+<a id="how-it-works"></a>
 
 ## Usage
 
 ```bash
-# full release flow (bump → changelog → commit → tag → push)
-npx github:NickCirv/release-pilot release
-
-# preview without touching anything
-npx github:NickCirv/release-pilot release --dry-run
-
-# force a specific bump type
-npx github:NickCirv/release-pilot release --force minor
-
-# preview the changelog only (no writes)
-npx github:NickCirv/release-pilot changelog
-
-# preview changelog as JSON
-npx github:NickCirv/release-pilot changelog --json
-
-# bump package.json only, no tag or commit
-npx github:NickCirv/release-pilot bump
-
-# check if the repo is ready (clean tree, remote configured)
-npx github:NickCirv/release-pilot check
+node /path/to/release-pilot/bin/pilot.js release --dry-run
+node /path/to/release-pilot/bin/pilot.js bump --dry-run --force patch
+node /path/to/release-pilot/bin/pilot.js check
 ```
 
-## Commands
+A real `release` modifies package.json and CHANGELOG.md, commits, creates an annotated tag and pushes that tag by default. `--no-push` suppresses the remote tag push.
 
-| Command | What it does |
-|---------|-------------|
-| `release` | Full flow: bump → changelog → commit → annotated tag → push |
-| `changelog` | Preview the changelog for the next release without touching files |
-| `bump` | Bump `package.json` only — no commit, no tag |
-| `check` | Verify clean working tree, correct branch, remote configured |
+[Command reference](docs/REFERENCE.md) covers arguments, modes and output controls.
 
-## Flags
 
-| Flag | Commands | Description |
-|------|----------|-------------|
-| `--dry-run` | `release`, `bump` | Preview all actions, no files modified |
-| `--force <type>` | `release`, `bump` | Override auto-detected bump: `major`, `minor`, or `patch` |
-| `--no-push` | `release` | Create tag locally, skip the remote push |
-| `--json` | `changelog` | Output raw JSON instead of formatted markdown |
 
-## How it works
+<a id="why-not-x"></a>
 
-1. **Reads** your git log since the last tag (`git log v1.2.3..HEAD`)
-2. **Parses** conventional commits — `feat:` bumps minor, `fix:` bumps patch, `BREAKING CHANGE:` bumps major
-3. **Generates** a [Keep a Changelog](https://keepachangelog.com/) formatted `CHANGELOG.md`, prepended to any existing entries
-4. **Bumps** `package.json`, commits `chore(release): vX.Y.Z`, creates an annotated git tag, and pushes
+<a id="what-it-is-not"></a>
 
-Conventional commit types recognised: `feat`, `fix`, `chore`, `perf`, `refactor`, `docs`, `test`, `ci`, `build`, `style`, `revert`
+## Behavior and limits
 
-Breaking changes detected via `!` suffix (e.g. `feat!: drop Node 16`) or `BREAKING CHANGE:` in the commit body.
+The release path does not automatically invoke the separate readiness check. Generated changelog comparison links are hard-coded to NickCirv/release-pilot and need correction when used elsewhere. Package-lock version synchronization, package publication and release rollback are not implemented by this flow. A pushed tag is not evidence of a published npm package.
 
-## Why not X?
+## Development
 
-> **semantic-release** needs a CI environment and a mountain of config.
-> **standard-version** is unmaintained and archived.
-> **release-it** needs a config file and interactive prompts.
->
-> release-pilot needs nothing. `npx github:NickCirv/release-pilot` and go.
+Declared package scripts:
 
-## What it is NOT
+| Script | Command |
+| --- | --- |
+| `start` | `node ./bin/pilot.js` |
+| `lint` | `node --check src/*.js bin/pilot.js` |
+| `test` | `node --test` |
 
-- **Not a CI/CD platform.** It runs locally or in any shell — it doesn't manage pipelines, secrets, or deployment targets.
-- **Not a monorepo release tool.** It manages a single `package.json` version per run.
-- **Not a semantic-release replacement at scale.** For complex multi-package workflows with plugin ecosystems, semantic-release remains the right tool.
+The smoke test syntax-checks the entrypoint; it does not exercise CLI behavior or integrations.
 
----
+## Research
 
-<div align="center">
-<sub>Node 18+ · MIT · by <a href="https://github.com/NickCirv">NickCirv</a></sub>
-</div>
+[Source review and claim ledger](docs/RESEARCH.md) records revision `4eb3de7fef7d`, inspected files and verification gaps.
+
+## License and attribution
+
+Protected license and attribution files remain unchanged: [LICENSE](https://github.com/NickCirv/release-pilot/blob/4eb3de7fef7d82c4f68c875d81628fa75779bb0a/LICENSE).
+
+[Artwork credits](assets/nicholas-ashkar/CREDITS.md) · [Nicholas Ashkar — consulting](https://nicholashkar.com/#oxblood-contact)
